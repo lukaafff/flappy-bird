@@ -96,15 +96,76 @@ const planoDeFundo = {
     }
 }
 
+//constante para definir a sprite da tela inicial
+const mensagemGetReady = {
+    spriteX: 134,
+    spriteY: 0,
+    largura: 174,
+    altura: 152,
+    x: (canvas.width / 2) -174 / 2,
+    y: 50,
+    desenha () {
+        contexto.drawImage(
+            sprites, //imagem
+            mensagemGetReady.spriteX, mensagemGetReady.spriteY, //qual espaçamento x e y a sprite está no arquivo
+            mensagemGetReady.largura, mensagemGetReady.altura, //tamanho do recorte na sprite
+            mensagemGetReady.x, mensagemGetReady.y, //posição onde começa a sprite x e y
+            mensagemGetReady.largura, mensagemGetReady.altura //dentro do canvas qual o tamanho da imagem
+        );
+    }
+}
+
+
+//TELAS
+let telaAtiva = {};
+function mudaParaTela (novaTela) {
+    telaAtiva = novaTela;
+};
+
+const Telas = {
+    INICIO: {
+        desenha() {
+            planoDeFundo.desenha();
+            chao.desenha();
+            flappyBird.desenha();
+            mensagemGetReady.desenha();
+        },
+        click(){
+            mudaParaTela(Telas.JOGO);
+        },
+        atualiza() {
+
+        }
+    }
+};
+
+Telas.JOGO = {
+    desenha(){
+        planoDeFundo.desenha();
+        chao.desenha();
+        flappyBird.desenha();
+    },
+    atualiza(){
+        flappyBird.atualiza();
+    }
+};
+
+
 //função para repetir tudo
 function loop () {
-    flappyBird.atualiza();
-
-    planoDeFundo.desenha();
-    chao.desenha();
-    flappyBird.desenha();
+    telaAtiva.desenha();
+    telaAtiva.atualiza();
 
     requestAnimationFrame(loop);
 };
 
-loop (); //executando função
+//reconhecer click para iniciar jogo
+window.addEventListener('click', function(){
+    if(telaAtiva.click) {
+        telaAtiva.click();
+    }
+});
+
+//executando funções
+mudaParaTela(Telas.INICIO);
+loop (); 
