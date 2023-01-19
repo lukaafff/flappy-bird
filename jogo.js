@@ -32,9 +32,8 @@ function criaFlappyBird () {
             if(fazColisao(flappyBird, globais.chao)) {
                 som_HIT.play();
 
-            setTimeout(() => {
-                mudaParaTela(Telas.INICIO); //volta para a tela inicial
-            }, 500);
+                mudaParaTela(Telas.GAME_OVER); //volta para a tela inicial
+            
                 return;
             }
 
@@ -150,13 +149,13 @@ const planoDeFundo = {
     }
 }
 
-//constante para definir a sprite da tela inicial
+//constante para definir a mensagem da tela inicial
 const mensagemGetReady = {
     spriteX: 134,
     spriteY: 0,
     largura: 174,
     altura: 152,
-    x: (canvas.width / 2) -174 / 2,
+    x: (canvas.width / 2) -174 / 2, //centralizar
     y: 50,
     desenha () {
         contexto.drawImage(
@@ -165,6 +164,25 @@ const mensagemGetReady = {
             mensagemGetReady.largura, mensagemGetReady.altura, //tamanho do recorte na sprite
             mensagemGetReady.x, mensagemGetReady.y, //posição onde começa a sprite x e y
             mensagemGetReady.largura, mensagemGetReady.altura //dentro do canvas qual o tamanho da imagem
+        );
+    }
+}
+
+//constante para definir a mensagem de fim de jogo
+const mensagemGameOver = {
+    spriteX: 134,
+    spriteY: 153,
+    largura: 226,
+    altura: 200,
+    x: (canvas.width / 2) -226 / 2, //centralizar
+    y: 50,
+    desenha () {
+        contexto.drawImage(
+            sprites, //imagem
+            mensagemGameOver.spriteX, mensagemGameOver.spriteY, //qual espaçamento x e y a sprite está no arquivo
+            mensagemGameOver.largura, mensagemGameOver.altura, //tamanho do recorte na sprite
+            mensagemGameOver.x, mensagemGameOver.y, //posição onde começa a sprite x e y
+            mensagemGameOver.largura, mensagemGameOver.altura //dentro do canvas qual o tamanho da imagem
         );
     }
 }
@@ -189,7 +207,7 @@ function criaCanos () {
                 canos.pares.forEach(function(par){
 
                     const yRamdom = par.y; //definir alaeatoriedade
-                    const espacamentoCanos = 90;
+                    const espacamentoCanos = 100;
     
                     //cano ceu
                     const canoCeuX = par.x;
@@ -256,8 +274,8 @@ function criaCanos () {
                 par.x = par.x -2;
 
                 if(canos.colisaoComFlappy(par)) {
-                    //som_HIT.play();
-                    mudaParaTela(Telas.INICIO);
+                    som_HIT.play();
+                    mudaParaTela(Telas.GAME_OVER);
                   }
 
                 //remover canos da memoria
@@ -268,6 +286,29 @@ function criaCanos () {
         }
     }
     return canos;
+}
+
+//pontuação
+function criaPlacar() {
+    const placar = {
+        pontuacao: 0,
+        desenha(){
+            contexto.font = '35px "VT323"';
+            contexto.textAlign = 'right';
+            contexto.fillStyle = 'white';
+            contexto.fillText(`${placar.pontuacao}`, canvas.width - 10, 35);
+        },
+        atualiza(){
+            //controle de frames
+            const intervaloFrames = 25;
+            const passouIntervalo = frames % intervaloFrames === 0;
+
+            if(passouIntervalo) {
+                placar.pontuacao = placar.pontuacao + 1;
+            }
+        }
+    }
+    return placar;
 }
 
 //colisao chao
@@ -305,7 +346,6 @@ const Telas = {
         desenha() {
             planoDeFundo.desenha();
             globais.flappyBird.desenha();
-            globais.canos.desenha();
             globais.chao.desenha();
             mensagemGetReady.desenha();
         },
@@ -314,17 +354,20 @@ const Telas = {
         },
         atualiza() {
             globais.chao.atualiza();
-            globais.canos.atualiza();
         }
     }
 };
 
 Telas.JOGO = {
+    inicializa() {
+        globais.placar = criaPlacar();
+    },
     desenha(){
         planoDeFundo.desenha();
         globais.canos.desenha();
         globais.chao.desenha();
         globais.flappyBird.desenha();
+        globais.placar.desenha();
     },
     click(){
         globais.flappyBird.pula();
@@ -333,9 +376,21 @@ Telas.JOGO = {
         globais.canos.atualiza();
         globais.chao.atualiza();
         globais.flappyBird.atualiza();
+        globais.placar.atualiza();
     }
 };
 
+Telas.GAME_OVER = {
+    desenha() {
+        mensagemGameOver.desenha();
+    },
+    atualiza() {
+
+    },
+    click() {
+        mudaParaTela(Telas.INICIO);
+    }
+};
 
 //função para repetir tudo
 function loop () {
